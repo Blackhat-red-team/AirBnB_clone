@@ -1,18 +1,16 @@
 #!/usr/bin/python3
 import cmd
-import json
-import re
-import sys
 import shlex
-from models import storage
+import sys
+import re
 from models.base_model import BaseModel
 from models.user import User
-from shlex import split
+from models.place import Place
 from models.state import State
 from models.city import City
-from models.place import Place
 from models.amenity import Amenity
 from models.review import Review
+from models import storage
 
 
 class HBNBCommand(cmd.Cmd):
@@ -49,27 +47,26 @@ class HBNBCommand(cmd.Cmd):
         
         cmd.Cmd.do_help(self, linne)
 
-
+ 
 
 
     def do_create(self, linne):
+        
+        vzgs = shlex.split(linne)
 
-        linne = shlex.split(linne)
-
-        if len(linne) < 1:
+        if len(vzgs) < 1:
             print("** class name missing **")
             return
 
-        class_naims = linne[0]
+        class_name = vzgs[0]
 
-        if class_naims not in HBNBCommand.opclas_dic:
+        if class_name not in HBNBCommand.opclas_dic:
             print("** class doesn't exist **")
         else:
-            cls = globals()[class_naims]
+            cls = globals()[class_name]
             new_inst = cls()
             print(new_inst.id)
             storage.save()
-
     def do_show(self, linne):
        
         vzgs = shlex.split(linne)
@@ -141,11 +138,7 @@ class HBNBCommand(cmd.Cmd):
                                   vrgs[0] == inst.__class__.__name__):
                 obj_list.append(inst_dict[key].__str__())
         print(obj_list)
-
-    def do_help(self, linne):
-       
-        cmd.Cmd.do_help(self, linne)
-
+        
     def do_update(self, linne):
 
         vrgs = shlex.split(linne)
@@ -185,7 +178,6 @@ class HBNBCommand(cmd.Cmd):
                 return
         except KeyError:
             print("** no instance found **")
-
     def do_count(self, linne):
 
         count = 0
@@ -196,7 +188,10 @@ class HBNBCommand(cmd.Cmd):
             if name[0] == class_naims:
                 count += 1
         print(count)
+  
+    
 
+   
     def default(self, linne):
 
         revax = re.match(r"(\w+\.\w+)(.*)", linne)
