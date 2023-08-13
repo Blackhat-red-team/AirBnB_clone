@@ -6,4 +6,12 @@ class Review(BaseModel):
     place_id = ""
     user_id = ""
     text = ""
-  
+    
+    def __init__(self, *args, **kwargs):
+        """Instance Constructor.
+
+        args
+        name : string review email
+        """
+
+        super().__init__(*args, **kwargs)
