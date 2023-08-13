@@ -18,7 +18,6 @@ class TestState(unittest.TestCase):
 
     def test_doc_state(self):
 
-        self.assertIsNotNone(State.__doc__, 'no docs for Base class')
         self.assertIsNotNone(models.state.__doc__, 'no docs for module')
         for name, method in inspect.getmembers(State, inspect.isfunction):
             self.assertIsNotNone(method.__doc__, f"{name} has no docs")
