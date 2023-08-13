@@ -1,65 +1,96 @@
 #!/usr/bin/python3
-# test cases for base class
+"""Unittest for base model
+"""
 import unittest
-from models.base_model import BaseModel
 from models.user import User
-import models.base_model
-import models.user
-import inspect
-import datetime
-from time import sleep
+from models.base_model import BaseModel
+from models import storage
+from datetime import datetime
 
 
-class TestUser(unittest.TestCase):
+class TestConstructor(unittest.TestCase):
+    """
+    test class for the max_integer() function.
+    """
+    user = User()
+    user.email = "Alx@Alx.com"
+    user.password = "EL0mda"
+    user.first_name = "Alx"
+    user.last_name = "Said"
 
-    def setUp(self):
+    def test_default_values(self):
+        """test default value"""
 
-        self.c = User()
+        u = User()
+        self.assertEqual(u.email, "")
+        self.assertEqual(u.password, "")
+        self.assertEqual(u.first_name, "")
+        self.assertEqual(u.last_name, "")
+    def test_create_instance_without_kwargs(self):
 
-    def test_doc_user(self):
+        self.assertIsInstance(self.user, User)
+        self.assertIsInstance(self.user, BaseModel)
+        self.assertIsInstance(self.user.id, str)
+        self.assertIsInstance(self.user.created_at, datetime)
+        self.assertIsInstance(self.user.updated_at, datetime)
+        self.assertIsInstance(self.user.email, str)
+        self.assertIsInstance(self.user.password, str)
+        self.assertIsInstance(self.user.first_name, str)
+        self.assertIsInstance(self.user.last_name, str)
+        self.assertEqual(self.user.email, "Alx@Alx.com")
+        self.assertEqual(self.user.password, "EL0mda")
+        self.assertEqual(self.user.first_name, "Alx")
+        self.assertEqual(self.user.last_name, "Said")
 
-        self.assertIsNotNone(User.__doc__, 'no docs for Base class')
-        self.assertIsNotNone(models.user.__doc__, 'no docs for module')
-        for name, method in inspect.getmembers(User, inspect.isfunction):
-            self.assertIsNotNone(method.__doc__, f"{name} has no docs")
+    def test_create_instance_with_kwargs(self):
 
-    def test_init_user(self):
+        user_data = {
+            "id": "user-123",
+            "email": "Mo@Alx.com",
+            "password": "new_password",
+            "first_name": "Mo",
+            "last_name": "Said",
+            "created_at": "2023-08-11T23:00:25.886465",
+            "updated_at": "2023-08-11T23:00:25.886466"
+        }
 
-        self.assertEqual(type(self.c.id), str)
-        self.assertEqual(type(self.c.updated_at), datetime.datetime)
-        self.assertEqual(type(self.c.created_at), datetime.datetime)
+        new_user = User(**user_data)
 
-    def test_save_user(self):
+        self.assertIsInstance(new_user, User)
+        self.assertIsInstance(new_user, BaseModel)
+        self.assertIsInstance(new_user.id, str)
+        self.assertIsInstance(new_user.created_at, datetime)
+        self.assertIsInstance(new_user.updated_at, datetime)
+        self.assertIsInstance(new_user.email, str)
+        self.assertIsInstance(new_user.password, str)
+        self.assertIsInstance(new_user.first_name, str)
+        self.assertIsInstance(new_user.last_name, str)
 
-        current_updatedAt = self.c.updated_at
-        self.c.save()
-        self.assertNotEqual(current_updatedAt, self.c.updated_at)
+        self.assertEqual(new_user.id, "user-123")
+        self.assertEqual(new_user.email, "Mo@Alx.com")
+        self.assertEqual(new_user.password, "new_password")
+        self.assertEqual(new_user.first_name, "Mo")
+        self.assertEqual(new_user.last_name, "Said")
 
-        with self.assertRaises(TypeError):
-            self.c.save(13)
+    def test_to_dict(self):
+ 
+        to_dict_returned_dict = self.user.to_dict()
+        expected_dict = self.user.__dict__.copy()
+        expected_dict["__class__"] = self.user.__class__.__name__
+        expected_dict["updated_at"] = self.user.updated_at.isoformat()
+        expected_dict["created_at"] = self.user.created_at.isoformat()
+        self.assertDictEqual(expected_dict, to_dict_returned_dict)
 
-    def test_to_dict_city(self):
+    def test_save(self):
 
-        self.c.first_name = "jonas"
-        self.c.last_name = "stones"
-        self.c.email = "jonas@example.com"
-        self.c.password = "root"
-        dict1 = self.c.to_dict()
+        before_update_time = self.user.updated_at
+        self.user.email = "updated@example.com"
+        self.user.save()
+        after_update_time = self.user.updated_at
+        self.assertNotEqual(before_update_time, after_update_time)
 
-        self.assertEqual(type(dict1['first_name']), str)
-        self.assertEqual(dict1['first_name'], "jonas")
-        self.assertEqual(dict1['last_name'], "stones")
-        self.assertEqual(dict1['email'], "jonas@example.com")
-        self.assertEqual(dict1['password'], "root")
-        self.assertEqual(type(dict1['__class__']), str)
-        self.assertEqual(dict1['__class__'], "User")
-        self.assertEqual(type(dict1['updated_at']), str)
-        self.assertEqual(type(dict1['id']), str)
-        self.assertEqual(type(dict1['created_at']), str)
-
-        with self.assertRaises(TypeError):
-            self.c.to_dict('str')
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_str(self):
+  
+        n = self.user.__class__.__name__
+        expected_str = f"[{n}] ({self.user.id}) <{self.user.__dict__}>"
+        self.assertEqual(self.user.__str__(), expected_str)

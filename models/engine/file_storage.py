@@ -16,6 +16,15 @@ class FileStorage:
 
     __file_path = "./file.json"
     __objects = {}
+    __models = {
+        'User': User,
+        'BaseModel': BaseModel,
+        'State': State,
+        'City': City,
+        'Amenity': Amenity,
+        'Place': Place,
+        'Review': Review
+    }
 
     def all(self):
 
@@ -34,7 +43,6 @@ class FileStorage:
         to_json = json.dumps(dozt1)
         with open(self.__file_path, "w") as f:
             f.write(to_json)
-
     def reload(self):
 
         dozt1 = {}
@@ -45,3 +53,4 @@ class FileStorage:
             for key, obj_dict in dozt1.items():
                 cls = globals()[obj_dict['__class__']]
                 self.__objects[key] = cls(**obj_dict)
+    
