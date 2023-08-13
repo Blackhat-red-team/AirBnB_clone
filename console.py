@@ -15,37 +15,20 @@ from models.amenity import Amenity
 from models.review import Review
 
 
-def farre(linne):
-    chary_brazos = re.search(r"\{(.*?)\}", linne)
-    braokza = re.search(r"\[(.*?)\]", linne)
-    if chary_brazos is None:
-        if braokza is None:
-            return [i.strip(",") for i in split(linne)]
-        else:
-            loxcr = split(linne[:braokza.span()[0]])
-            rmal = [i.strip(",") for i in loxcr]
-            rmal.append(braokza.group())
-            return rmal
-    else:
-        loxcr = split(linne[:chary_brazos.span()[0]])
-        rmal = [i.strip(",") for i in loxcr]
-        rmal.append(chary_brazos.group())
-        return rmal
-
-
 class HBNBCommand(cmd.Cmd):
 
-    prompt = "(hbnb)"
+   
     opclas_dic = {
         "BaseModel", "User", "State", "City", "Place", "Amenity",
         "Review"
     }
-
+    prompt = "(hbnb)"
+    
     def do_quit(self, linne):
-        """Quit command to exit the program."""
+        """ function to exit the cmd """
         return True
 
-    def do_EOF(self, line):
+    def do_EOF(self, linne):
         """ function to exit the cmd """
         print()
         return True
@@ -59,36 +42,68 @@ class HBNBCommand(cmd.Cmd):
         print('EOF command to exit the program')
 
     def emptyline(self):
-        """Empty linne."""
+        """ handles empty lines """
         pass
+        
+    def do_help(self, linne):
+        """overrides help method"""
+        cmd.Cmd.do_help(self, linne)
+
+
+
 
     def do_create(self, linne):
 
-        if linne == "":
+        linne = shlex.split(linne)
+
+        if len(linne) < 1:
             print("** class name missing **")
+            return
+
+        class_naims = linne[0]
+
+        if class_naims not in HBNBCommand.opclas_dic:
+            print("** class doesn't exist **")
         else:
-            try:
-                myclass = eval(linne + "()")
-                myclass.save()
-                print(myclass.id)
-            except Exception as e:
-                print("** class doesn't exist **")
+            cls = globals()[class_naims]
+            new_inst = cls()
+            print(new_inst.id)
+            storage.save()
 
     def do_show(self, linne):
+       
+        vzgs = shlex.split(linne)
 
-        linel = farre(linne)
-        objdzyt = storage.all()
-        if len(linel) == 0:
+        if len(vzgs) < 1:
             print("** class name missing **")
-        elif linel[0] not in HBNBCommand.opclas_dic:
-            print("** class doesn't exist **")
-        elif len(linel) == 1:
+            return
+        elif len(vzgs) < 2:
             print("** instance id missing **")
-        elif "{}.{}".format(linel[0], linel[1]) not in objdzyt:
-            print("** no instance found **")
-        else:
-            print(objdzyt["{}.{}".format(linel[0], linel[1])])
+            return
 
+        class_name = vzgs[0]
+        cls = globals().get(class_name)  
+        id = vzgs[1]
+
+        if class_name not in HBNBCommand.opclas_dic:
+            print("** class doesn't exist **")
+            return
+
+        instances_dict = storage.all()  
+        id_list = []
+        """ check if instance exists and if yes it gets printed, otherwise
+            no instance found would be printed
+        """
+        for key, obj in instances_dict.items():
+            name = key.split(".")
+            if obj.id == id and name[0] == class_name:
+                try:
+                    print(obj)
+                    return
+                except KeyError:
+                    print("** no instance found **")
+
+        print("** no instance found **")
     def do_destroy(self, linne):
 
         vrgs = shlex.split(linne)
@@ -111,18 +126,23 @@ class HBNBCommand(cmd.Cmd):
             print("** no instance found **")
 
     def do_all(self, linne):
+ 
 
-        mval = farre(linne)
-        if len(mval) > 0 and mval[0] not in HBNBCommand.opclas_dic:
+        vrgs = shlex.split(linne)
+        if len(vrgs) > 0 and vrgs[0] not in HBNBCommand.all_classes:
             print("** class doesn't exist **")
-        else:
-            objl = []
-            for objxx in storage.all().values():
-                if len(mval) > 0 and mval[0] == objxx.__class__.__name__:
-                    objl.append(objxx.__str__())
-                elif len(mval) == 0:
-                    objl.append(objxx.__str__())
-            print(objl)
+            return
+
+        obj_list = []
+
+        inst_dict = storage.all()
+        for key in inst_dict:
+            inst = inst_dict[key]
+
+            if len(vrgs) == 0 or (len(vrgs) > 0 and
+                                  vrgs[0] == inst.__class__.__name__):
+                obj_list.append(inst_dict[key].__str__())
+        print(obj_list)
 
     def do_help(self, linne):
         """overrides help methdd"""
@@ -141,7 +161,7 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
         elif len(vrgs) == 2:
-            print("** attribute name missing ")
+            print("** attribute name missing **")
             return
         elif len(vrgs) == 3:
             print("** value missing **")
@@ -154,10 +174,10 @@ class HBNBCommand(cmd.Cmd):
 
             objects_dict = storage.all()
             for key in objects_dict:
-                class_name, inst_id = key.split(".")
+                class_naims, inst_id = key.split(".")
                 validd_idss.append(inst_id)
                 if id in validd_idss:
-                    obj = objects_dict[f"{class_name}.{id}"]
+                    obj = objects_dict[f"{class_naims}.{id}"]
                     attr = vrgs[2]
                     value = vrgs[3]
                     setattr(obj, attr, value)
@@ -171,11 +191,11 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, linne):
 
         count = 0
-        class_name = linne
+        class_naims = linne
         all_insta = storage.all()
         for key, obj in all_insta.items():
             name = key.split(".")
-            if name[0] == class_name:
+            if name[0] == class_naims:
                 count += 1
         print(count)
 
