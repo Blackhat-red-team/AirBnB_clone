@@ -70,37 +70,24 @@ class HBNBCommand(cmd.Cmd):
             print(new_inst.id)
             storage.save()
     def do_show(self, linne):
-       
-        vzgs = shlex.split(linne)
-
-        if len(vzgs) < 1:
+      
+        zane_vactor = linne.split()
+        if zane_vactor == []:
             print("** class name missing **")
             return
-        elif len(vzgs) < 2:
-            print("** instance id missing **")
-            return
-
-        class_name = vzgs[0]
-        cls = globals().get(class_name)  
-        id = vzgs[1]
-
-        if class_name not in HBNBCommand.opclas_dic:
+        elif self.opclas_dic.get(zane_vactor[0]) is None:
             print("** class doesn't exist **")
             return
-
-        instances_dict = storage.all()  
-        id_list = []
-
-        for key, obj in instances_dict.items():
-            name = key.split(".")
-            if obj.id == id and name[0] == class_name:
-                try:
-                    print(obj)
-                    return
-                except KeyError:
-                    print("** no instance found **")
-
-        print("** no instance found **")
+        elif len(zane_vactor) != 2:
+            print("** instance id missing **")
+            return
+        objects_class = storage.all()
+        key = zane_vactor[0] + "." + zane_vactor[1]
+        if key in objects_class.keys():
+            print(objects_class[key].__str__())
+        else:
+            print("** no instance found **")
+            return
     def do_destroy(self, linne):
 
         vrgs = shlex.split(linne)
