@@ -52,15 +52,13 @@ class HBNBCommand(cmd.Cmd):
 
     def help_quit(self):
         """ help guide for quit command """
-        print('Quit command to exit the program')
-        
+        print('Quit command to exit the program')        
     def do_help(self, linne):
         """overrides help method"""
         cmd.Cmd.do_help(self, linne)
 
 
     def help_EOF(self):
-        """ help guide for EOF command """
         print('EOF command to exit the program')
 
     def emptyline(self):
