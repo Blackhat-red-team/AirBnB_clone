@@ -35,14 +35,15 @@ def farre(linne):
 
 class HBNBCommand(cmd.Cmd):
 
-    prompt = "(hbnb)"
+   
     opclas_dic = {
         "BaseModel", "User", "State", "City", "Place", "Amenity",
         "Review"
     }
-
+    prompt = "(hbnb)"
+    
     def do_quit(self, linne):
-        """Quit command to exit the program."""
+        """ function to exit the cmd """
         return True
 
     def do_EOF(self, linne):
@@ -53,31 +54,39 @@ class HBNBCommand(cmd.Cmd):
     def help_quit(self):
         """ help guide for quit command """
         print('Quit command to exit the program')
-        
-    def do_help(self, linne):
-        """overrides help method"""
-        cmd.Cmd.do_help(self, linne)
-
 
     def help_EOF(self):
         """ help guide for EOF command """
         print('EOF command to exit the program')
 
     def emptyline(self):
-        """Empty linne."""
+        """ handles empty lines """
         pass
+        
+    def do_help(self, linne):
+        """overrides help method"""
+        cmd.Cmd.do_help(self, linne)
+
+
+
 
     def do_create(self, linne):
 
-        if linne == "":
+        linne = shlex.split(linne)
+
+        if len(linne) < 1:
             print("** class name missing **")
+            return
+
+        class_naims = linne[0]
+
+        if class_naims not in HBNBCommand.opclas_dic:
+            print("** class doesn't exist **")
         else:
-            try:
-                myclass = eval(linne + "()")
-                myclass.save()
-                print(myclass.id)
-            except Exception as e:
-                print("** class doesn't exist **")
+            cls = globals()[class_naims]
+            new_inst = cls()
+            print(new_inst.id)
+            storage.save()
 
     def do_show(self, linne):
 
@@ -159,10 +168,10 @@ class HBNBCommand(cmd.Cmd):
 
             objects_dict = storage.all()
             for key in objects_dict:
-                class_name, inst_id = key.split(".")
+                class_naims, inst_id = key.split(".")
                 validd_idss.append(inst_id)
                 if id in validd_idss:
-                    obj = objects_dict[f"{class_name}.{id}"]
+                    obj = objects_dict[f"{class_naims}.{id}"]
                     attr = vrgs[2]
                     value = vrgs[3]
                     setattr(obj, attr, value)
@@ -176,11 +185,11 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, linne):
 
         count = 0
-        class_name = linne
+        class_naims = linne
         all_insta = storage.all()
         for key, obj in all_insta.items():
             name = key.split(".")
-            if name[0] == class_name:
+            if name[0] == class_naims:
                 count += 1
         print(count)
 
