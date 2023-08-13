@@ -1,93 +1,94 @@
 #!/usr/bin/python3
 import cmd
-import shlex
-import sys
+import json
 import re
+import sys
+import shlex
+from models import storage
 from models.base_model import BaseModel
 from models.user import User
-from models.place import Place
+from shlex import split
 from models.state import State
 from models.city import City
+from models.place import Place
 from models.amenity import Amenity
 from models.review import Review
-from models import storage
+
+
+def farre(linne):
+    chary_brazos = re.search(r"\{(.*?)\}", linne)
+    braokza = re.search(r"\[(.*?)\]", linne)
+    if chary_brazos is None:
+        if braokza is None:
+            return [i.strip(",") for i in split(linne)]
+        else:
+            loxcr = split(linne[:braokza.span()[0]])
+            rmal = [i.strip(",") for i in loxcr]
+            rmal.append(braokza.group())
+            return rmal
+    else:
+        loxcr = split(linne[:chary_brazos.span()[0]])
+        rmal = [i.strip(",") for i in loxcr]
+        rmal.append(chary_brazos.group())
+        return rmal
 
 
 class HBNBCommand(cmd.Cmd):
 
-   
+    prompt = "(hbnb)"
     opclas_dic = {
         "BaseModel", "User", "State", "City", "Place", "Amenity",
         "Review"
     }
-    prompt = "(hbnb)"
-    
+
+    def do_quit(self, linne):
+        """Quit command to exit the program."""
+        return True
+
     def do_EOF(self, line):
-        
+        """ function to exit the cmd """
+        print()
         return True
-
-    def do_quit(self, line):
-        
-        return True
-    
-   
-
 
     def help_quit(self):
-       
+        """ help guide for quit command """
         print('Quit command to exit the program')
 
     def help_EOF(self):
-       
+        """ help guide for EOF command """
         print('EOF command to exit the program')
 
     def emptyline(self):
-        
+        """Empty linne."""
         pass
-        
-    def do_help(self, linne):
-        
-        cmd.Cmd.do_help(self, linne)
-
- 
-
 
     def do_create(self, linne):
-        
-        vzgs = shlex.split(linne)
 
-        if len(vzgs) < 1:
+        if linne == "":
             print("** class name missing **")
-            return
-
-        class_name = vzgs[0]
-
-        if class_name not in HBNBCommand.opclas_dic:
-            print("** class doesn't exist **")
         else:
-            cls = globals()[class_name]
-            new_inst = cls()
-            print(new_inst.id)
-            storage.save()
+            try:
+                myclass = eval(linne + "()")
+                myclass.save()
+                print(myclass.id)
+            except Exception as e:
+                print("** class doesn't exist **")
+
     def do_show(self, linne):
-      
-        zane_vactor = linne.split()
-        if zane_vactor == []:
+
+        linel = farre(linne)
+        objdzyt = storage.all()
+        if len(linel) == 0:
             print("** class name missing **")
-            return
-        elif self.opclas_dic.get(zane_vactor[0]) is None:
+        elif linel[0] not in HBNBCommand.opclas_dic:
             print("** class doesn't exist **")
-            return
-        elif len(zane_vactor) != 2:
+        elif len(linel) == 1:
             print("** instance id missing **")
-            return
-        objects_class = storage.all()
-        key = zane_vactor[0] + "." + zane_vactor[1]
-        if key in objects_class.keys():
-            print(objects_class[key].__str__())
-        else:
+        elif "{}.{}".format(linel[0], linel[1]) not in objdzyt:
             print("** no instance found **")
-            return
+        else:
+            print(objdzyt["{}.{}".format(linel[0], linel[1])])
+
     def do_destroy(self, linne):
 
         vrgs = shlex.split(linne)
@@ -103,31 +104,30 @@ class HBNBCommand(cmd.Cmd):
             return
 
         try:
-            instann_dict = storage.all()  
+            instann_dict = storage.all()  # get stores objects as dict
             del instann_dict["{}.{}".format(vrgs[0], vrgs[1])]
             storage.save()
         except KeyError:
             print("** no instance found **")
 
     def do_all(self, linne):
- 
 
-        vrgs = shlex.split(linne)
-        if len(vrgs) > 0 and vrgs[0] not in HBNBCommand.opclas_dic:
+        mval = farre(linne)
+        if len(mval) > 0 and mval[0] not in HBNBCommand.opclas_dic:
             print("** class doesn't exist **")
-            return
+        else:
+            objl = []
+            for objxx in storage.all().values():
+                if len(mval) > 0 and mval[0] == objxx.__class__.__name__:
+                    objl.append(objxx.__str__())
+                elif len(mval) == 0:
+                    objl.append(objxx.__str__())
+            print(objl)
 
-        obj_list = []
+    def do_help(self, linne):
+        """overrides help methdd"""
+        cmd.Cmd.do_help(self, linne)
 
-        inst_dict = storage.all()
-        for key in inst_dict:
-            inst = inst_dict[key]
-
-            if len(vrgs) == 0 or (len(vrgs) > 0 and
-                                  vrgs[0] == inst.__class__.__name__):
-                obj_list.append(inst_dict[key].__str__())
-        print(obj_list)
-        
     def do_update(self, linne):
 
         vrgs = shlex.split(linne)
@@ -141,7 +141,7 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
         elif len(vrgs) == 2:
-            print("** attribute name missing **")
+            print("** attribute name missing ")
             return
         elif len(vrgs) == 3:
             print("** value missing **")
@@ -154,10 +154,10 @@ class HBNBCommand(cmd.Cmd):
 
             objects_dict = storage.all()
             for key in objects_dict:
-                class_naims, inst_id = key.split(".")
+                class_name, inst_id = key.split(".")
                 validd_idss.append(inst_id)
                 if id in validd_idss:
-                    obj = objects_dict[f"{class_naims}.{id}"]
+                    obj = objects_dict[f"{class_name}.{id}"]
                     attr = vrgs[2]
                     value = vrgs[3]
                     setattr(obj, attr, value)
@@ -167,20 +167,18 @@ class HBNBCommand(cmd.Cmd):
                 return
         except KeyError:
             print("** no instance found **")
+
     def do_count(self, linne):
 
         count = 0
-        class_naims = linne
+        class_name = linne
         all_insta = storage.all()
         for key, obj in all_insta.items():
             name = key.split(".")
-            if name[0] == class_naims:
+            if name[0] == class_name:
                 count += 1
         print(count)
-  
-    
 
-   
     def default(self, linne):
 
         revax = re.match(r"(\w+\.\w+)(.*)", linne)
