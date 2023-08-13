@@ -15,24 +15,6 @@ from models.amenity import Amenity
 from models.review import Review
 
 
-def farre(linne):
-    chary_brazos = re.search(r"\{(.*?)\}", linne)
-    braokza = re.search(r"\[(.*?)\]", linne)
-    if chary_brazos is None:
-        if braokza is None:
-            return [i.strip(",") for i in split(linne)]
-        else:
-            loxcr = split(linne[:braokza.span()[0]])
-            rmal = [i.strip(",") for i in loxcr]
-            rmal.append(braokza.group())
-            return rmal
-    else:
-        loxcr = split(linne[:chary_brazos.span()[0]])
-        rmal = [i.strip(",") for i in loxcr]
-        rmal.append(chary_brazos.group())
-        return rmal
-
-
 class HBNBCommand(cmd.Cmd):
 
    
@@ -89,20 +71,39 @@ class HBNBCommand(cmd.Cmd):
             storage.save()
 
     def do_show(self, linne):
+       
+        vzgs = shlex.split(linne)
 
-        linel = farre(linne)
-        objdzyt = storage.all()
-        if len(linel) == 0:
+        if len(vzgs) < 1:
             print("** class name missing **")
-        elif linel[0] not in HBNBCommand.opclas_dic:
-            print("** class doesn't exist **")
-        elif len(linel) == 1:
+            return
+        elif len(vzgs) < 2:
             print("** instance id missing **")
-        elif "{}.{}".format(linel[0], linel[1]) not in objdzyt:
-            print("** no instance found **")
-        else:
-            print(objdzyt["{}.{}".format(linel[0], linel[1])])
+            return
 
+        class_name = vzgs[0]
+        cls = globals().get(class_name)  
+        id = vzgs[1]
+
+        if class_name not in HBNBCommand.opclas_dic:
+            print("** class doesn't exist **")
+            return
+
+        instances_dict = storage.all()  
+        id_list = []
+        """ check if instance exists and if yes it gets printed, otherwise
+            no instance found would be printed
+        """
+        for key, obj in instances_dict.items():
+            name = key.split(".")
+            if obj.id == id and name[0] == class_name:
+                try:
+                    print(obj)
+                    return
+                except KeyError:
+                    print("** no instance found **")
+
+        print("** no instance found **")
     def do_destroy(self, linne):
 
         vrgs = shlex.split(linne)
@@ -125,18 +126,23 @@ class HBNBCommand(cmd.Cmd):
             print("** no instance found **")
 
     def do_all(self, linne):
+ 
 
-        mval = farre(linne)
-        if len(mval) > 0 and mval[0] not in HBNBCommand.opclas_dic:
+        vrgs = shlex.split(linne)
+        if len(vrgs) > 0 and vrgs[0] not in HBNBCommand.all_classes:
             print("** class doesn't exist **")
-        else:
-            objl = []
-            for objxx in storage.all().values():
-                if len(mval) > 0 and mval[0] == objxx.__class__.__name__:
-                    objl.append(objxx.__str__())
-                elif len(mval) == 0:
-                    objl.append(objxx.__str__())
-            print(objl)
+            return
+
+        obj_list = []
+
+        inst_dict = storage.all()
+        for key in inst_dict:
+            inst = inst_dict[key]
+
+            if len(vrgs) == 0 or (len(vrgs) > 0 and
+                                  vrgs[0] == inst.__class__.__name__):
+                obj_list.append(inst_dict[key].__str__())
+        print(obj_list)
 
     def do_help(self, linne):
         """overrides help methdd"""
