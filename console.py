@@ -25,28 +25,28 @@ class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb)"
     
     def do_quit(self, linne):
-        """ function to exit the cmd """
+       
         return True
 
     def do_EOF(self, linne):
-        """ function to exit the cmd """
+       
         print()
         return True
 
     def help_quit(self):
-        """ help guide for quit command """
+       
         print('Quit command to exit the program')
 
     def help_EOF(self):
-        """ help guide for EOF command """
+       
         print('EOF command to exit the program')
 
     def emptyline(self):
-        """ handles empty lines """
+        
         pass
         
     def do_help(self, linne):
-        """overrides help method"""
+        
         cmd.Cmd.do_help(self, linne)
 
 
@@ -91,9 +91,7 @@ class HBNBCommand(cmd.Cmd):
 
         instances_dict = storage.all()  
         id_list = []
-        """ check if instance exists and if yes it gets printed, otherwise
-            no instance found would be printed
-        """
+
         for key, obj in instances_dict.items():
             name = key.split(".")
             if obj.id == id and name[0] == class_name:
@@ -119,7 +117,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
         try:
-            instann_dict = storage.all()  # get stores objects as dict
+            instann_dict = storage.all()  
             del instann_dict["{}.{}".format(vrgs[0], vrgs[1])]
             storage.save()
         except KeyError:
@@ -129,7 +127,7 @@ class HBNBCommand(cmd.Cmd):
  
 
         vrgs = shlex.split(linne)
-        if len(vrgs) > 0 and vrgs[0] not in HBNBCommand.all_classes:
+        if len(vrgs) > 0 and vrgs[0] not in HBNBCommand.opclas_dic:
             print("** class doesn't exist **")
             return
 
@@ -145,7 +143,7 @@ class HBNBCommand(cmd.Cmd):
         print(obj_list)
 
     def do_help(self, linne):
-        """overrides help methdd"""
+       
         cmd.Cmd.do_help(self, linne)
 
     def do_update(self, linne):
